@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="exchange-rates">
+    <output-path>$PROJECT_DIR$/out/artifacts/exchange_rates</output-path>
+    <root id="archive" name="exchange-rates.war">
+      <element id="artifact" artifact-name="exchange-rates:Web exploded" />
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="lib">
+          <element id="file-copy" path="$USER_HOME$/Downloads/sqlite-jdbc-3.50.3.0.jar" />
+        </element>
+      </element>
+    </root>
+  </artifact>
+</component>
