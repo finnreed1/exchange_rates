@@ -1,18 +1,26 @@
 package project.servlets;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.dto.CurrencyDto;
+import project.exception.CodeExistsException;
+import project.exception.FieldsIncorrectException;
+import project.exception.FieldsEmptyException;
+import project.exception.InternalServerException;
 import project.service.CurrencyService;
-import project.validate.CodeValidator;
+import project.util.JsonManager;
+import project.validator.CurrencyValidator;
+import project.validator.SameValidator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 @WebServlet("/currencies")
@@ -25,13 +33,16 @@ public class CurrenciesServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
-        try (PrintWriter printWriter = resp.getWriter()) {
+        try (PrintWriter out = resp.getWriter()) {
             resp.setStatus(HttpServletResponse.SC_OK);
-            currencyService.findAll()
-                    .forEach(currencyDto -> printWriter.println(currencyDto.toString()));
+            List<CurrencyDto> list = currencyService.findAll();
+            for (CurrencyDto dto : list) {
+                out.write(JsonManager.dtoToJson(dto));
+            }
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            throw new RuntimeException(e);
+            String message = "Internal server error";
+            resp.getWriter().write(JsonManager.errorToJson(message, new InternalServerException(e.getMessage())));
         }
     }
 
@@ -41,30 +52,35 @@ public class CurrenciesServlet extends HttpServlet {
         var fullname = req.getParameter("fullname");
         var sign = req.getParameter("sign");
 
-        if (code.isEmpty() || fullname.isEmpty() || sign.isEmpty()) {
+        if (SameValidator.isInputFields(code, fullname, sign)) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("error: " + "One of the fields is empty");
+            String message = "Fields is empty";
+            resp.getWriter().write(JsonManager.errorToJson(message, new FieldsEmptyException(message)));
             return;
         }
-        if (!CodeValidator.isCodeCorrect(code)) {
+        if (!CurrencyValidator.isCodeCorrect(code)) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().write("{\"error\": \"Incorrect code\"}");
+            String message = "Incorrect code currency";
+            resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
             return;
         }
-        if (!CodeValidator.isUniqueCode(code)) {
+        if (!CurrencyValidator.isUniqueCode(code)) {
             resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            resp.getWriter().write("{\"error\": \"Code is not unique\"}");
+            String message = "Code is not unique";
+            resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));
             return;
         }
 
         try {
             currencyService.createNewCurrency(code, fullname, sign);
             resp.setStatus(HttpServletResponse.SC_CREATED);
-            PrintWriter printWriter = resp.getWriter();
+            PrintWriter out = resp.getWriter();
             Optional<CurrencyDto> dto = currencyService.findByCode(code);
-            printWriter.write(dto.get().toString());
+            out.write(JsonManager.dtoToJson(dto));
         } catch (SQLException e) {
-            throw new RuntimeException("Database error: ", e);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            String message = "Internal server error";
+            resp.getWriter().write(JsonManager.errorToJson(message, new InternalServerException(e.getMessage())));
         }
     }
 }

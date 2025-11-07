@@ -26,6 +26,7 @@ public class CurrencyDao implements Dao<Long, Currency> {
             FROM Currencies
             WHERE code = ?
             """;
+
     String CREATE_NEW_CURRENCY = """
             INSERT INTO Currencies (code, fullname, sign)
             VALUES (?, ?, ?);
@@ -35,7 +36,7 @@ public class CurrencyDao implements Dao<Long, Currency> {
     @Override
     public List<Currency> findAll() throws SQLException {
         try (var connection = ConnectionManager.get();
-        var prepareStatement = connection.prepareStatement(FIND_ALL_SQL)) {
+            var prepareStatement = connection.prepareStatement(FIND_ALL_SQL)) {
             List<Currency> list = new ArrayList<>();
             var statementResult = prepareStatement.executeQuery();
             while (statementResult.next()) {

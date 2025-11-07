@@ -7,7 +7,6 @@ import java.sql.SQLException;
 public final class ConnectionManager {
     private static final String URL_KEY = "db.url";
     private static final String DRIVER_KEY = "db.driver";
-
     static {
         load();
     }
@@ -16,7 +15,8 @@ public final class ConnectionManager {
 
     public static Connection get() {
         try {
-            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY));
+//            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY)); НЕ РАБОТАЕТ НА НОУТЕ
+            return DriverManager.getConnection("jdbc:sqlite:C:/Users/111/IdeaProjects/exchange_rates/identifier.sqlite");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
