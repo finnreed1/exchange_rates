@@ -1,6 +1,5 @@
 package project.dto;
 
-import lombok.Data;
 import project.entity.Currency;
 
 import java.util.Objects;

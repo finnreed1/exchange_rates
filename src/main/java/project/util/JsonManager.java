@@ -10,7 +10,9 @@ public class JsonManager {
     private static final ObjectMapper JsonMapper = new ObjectMapper();
 
     public static String dtoToJson(Object dto) throws JsonProcessingException {
-        return JsonMapper.writeValueAsString(dto);
+        String test = JsonMapper.writeValueAsString(dto);
+        System.out.println(test);
+        return test;
     }
 
     public static String errorToJson(String message, Exception exception) throws JsonProcessingException {

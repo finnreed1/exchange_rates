@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 public class ExchangeRatesService {
     private ExchangeRatesService() {}
 
-    @Getter
     private static ExchangeRatesService INSTANCE = new  ExchangeRatesService();
 
     public static ExchangeRatesDao exchangeRatesDao = ExchangeRatesDao.getInstance;
@@ -61,5 +60,9 @@ public class ExchangeRatesService {
         } catch (SQLException e) {
             throw new RuntimeException("SQL error: ", e);
         }
+    }
+
+    public static ExchangeRatesService getINSTANCE() {
+        return INSTANCE;
     }
 }

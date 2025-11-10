@@ -16,7 +16,7 @@ public final class ConnectionManager {
     public static Connection get() {
         try {
 //            return DriverManager.getConnection(PropertiesUtil.get(URL_KEY)); НЕ РАБОТАЕТ НА НОУТЕ
-            return DriverManager.getConnection("jdbc:sqlite:C:/Users/111/IdeaProjects/exchange_rates/identifier.sqlite");
+            return DriverManager.getConnection("jdbc:sqlite:C:/Users/andre/IdeaProjects/exchange-rates/identifier.sqlite");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

@@ -8,6 +8,15 @@
           <element id="module-output" name="exchange-rates" />
         </element>
       </element>
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.17.2" />
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-core:2.17.2" />
+      <element id="library" level="project" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.17.2" />
+      <element id="library" level="project" name="Maven: jakarta.servlet:jakarta.servlet-api:6.0.0" />
+      <element id="library" level="project" name="Maven: org.projectlombok:lombok:1.18.42" />
+      <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.36" />
+      <element id="library" level="project" name="Maven: org.xerial:sqlite-jdbc:3.45.1.0" />
+      <element id="library" level="project" name="servlet-api" />
+      <element id="library" level="project" name="sqlite-jdbc-3.50.3.0" />
     </root>
   </artifact>
 </component>

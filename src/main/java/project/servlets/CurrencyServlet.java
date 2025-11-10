@@ -42,6 +42,7 @@ public class CurrencyServlet extends HttpServlet {
             if (currencyObject.isPresent()) {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 CurrencyDto dto = currencyObject.get();
+                System.out.println();
                 out.write(JsonManager.dtoToJson(dto));
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);

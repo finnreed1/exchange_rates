@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CurrencyService {
-    @Getter
     private static CurrencyService INSTANCE = new CurrencyService();
 
     public CurrencyDao currencyDao = CurrencyDao.getInstance();
@@ -43,4 +42,7 @@ public class CurrencyService {
         currencyDao.createNewCurrency(code, fullname, sign);
     }
 
+    public static CurrencyService getINSTANCE() {
+        return INSTANCE;
+    }
 }

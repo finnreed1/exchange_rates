@@ -36,8 +36,9 @@ public class CurrenciesServlet extends HttpServlet {
         try (PrintWriter out = resp.getWriter()) {
             resp.setStatus(HttpServletResponse.SC_OK);
             List<CurrencyDto> list = currencyService.findAll();
+            System.out.println();
             for (CurrencyDto dto : list) {
-                out.write(JsonManager.dtoToJson(dto));
+                out.write(dto.toString());
             }
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
