@@ -15,7 +15,7 @@ public class SameValidator {
 
     public static boolean isInputFields(String... parameters) {
         for (String parameter : parameters) {
-            if (parameter.isEmpty()) {
+            if (parameter == null || parameter.isEmpty()) {
                 return true;
             }
         }
