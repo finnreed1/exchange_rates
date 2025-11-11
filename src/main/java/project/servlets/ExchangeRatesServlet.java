@@ -12,6 +12,7 @@ import project.exception.InternalServerException;
 import project.exception.ObjectNotFoundException;
 import project.util.JsonManager;
 import project.validator.CurrencyValidator;
+import project.validator.ExchangeRatesValidator;
 import project.validator.SameValidator;
 
 import java.io.IOException;
@@ -40,6 +41,12 @@ public class ExchangeRatesServlet extends HttpServlet {
         var pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String type = pathInfo.substring(1);
+            if (!ExchangeRatesValidator.isCodeCorrect(type)) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                String message = "Incorrect code currency";
+                resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
+                return;
+            }
             displayExchangeRate(type, req, resp);
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -67,7 +74,6 @@ public class ExchangeRatesServlet extends HttpServlet {
         }
     }
 
-
     public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
@@ -83,6 +89,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             printWriter.write(JsonManager.errorToJson(message, new FieldsEmptyException(message)));
         }
     }
+
     private void updateExchangeRates(String type, HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String rate = req.getParameter("rate");
 
@@ -102,6 +109,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             String message = "Base currency is not found";
             resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
         }
+
         if (CurrencyValidator.isNotExists(targetCurrencyCode)) {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
             String message = "Target currency is not found";

@@ -1,6 +1,5 @@
 package project.service;
 
-import lombok.Getter;
 import project.dao.CurrencyDao;
 import project.dto.CurrencyDto;
 
@@ -10,7 +9,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class CurrencyService {
-    private static CurrencyService INSTANCE = new CurrencyService();
+    private static final CurrencyService INSTANCE = new CurrencyService();
 
     public CurrencyDao currencyDao = CurrencyDao.getInstance();
 
@@ -42,7 +41,7 @@ public class CurrencyService {
         currencyDao.createNewCurrency(code, fullname, sign);
     }
 
-    public static CurrencyService getINSTANCE() {
+    public static CurrencyService getInstance() {
         return INSTANCE;
     }
 }

@@ -5,7 +5,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import project.dto.CurrencyDto;
 import project.dto.ExchangeRatesDto;
 import project.exception.*;
 import project.service.ExchangeRatesService;
@@ -21,7 +20,7 @@ import java.util.List;
 
 @WebServlet("/exchangeRates")
 public class ExchangesRatesServlet extends HttpServlet {
-    public static ExchangeRatesService exchangeRatesService = ExchangeRatesService.getINSTANCE();
+    public static ExchangeRatesService exchangeRatesService = ExchangeRatesService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -62,7 +61,7 @@ public class ExchangesRatesServlet extends HttpServlet {
         }
 
         //409 - Валютная пара с таким кодом уже существует
-        if (!ExchangeRatesValidator.isExistsCode(baseCurrencyCode.concat(targetCurrencyCode))) {
+        if (ExchangeRatesValidator.isExistsCode(baseCurrencyCode.concat(targetCurrencyCode))) {
             resp.setStatus(HttpServletResponse.SC_CONFLICT);
             String message = "Code is not unique";
             resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));

@@ -2,6 +2,7 @@ package project.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import project.dto.CurrencyDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +12,6 @@ public class JsonManager {
 
     public static String dtoToJson(Object dto) throws JsonProcessingException {
         String test = JsonMapper.writeValueAsString(dto);
-        System.out.println(test);
         return test;
     }
 
@@ -20,5 +20,11 @@ public class JsonManager {
         map.put("message", message);
         map.put("exception", exception.getMessage());
         return JsonMapper.writeValueAsString(map);
+    }
+
+    public static void main(String[] args) throws JsonProcessingException {
+        CurrencyDto dto = new CurrencyDto("RUB", "Russian Ruble", "P");
+        String test = JsonManager.dtoToJson(dto);
+        System.out.println(test);
     }
 }

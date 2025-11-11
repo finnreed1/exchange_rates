@@ -7,10 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import project.dto.CurrencyDto;
 import project.exception.FieldsEmptyException;
+import project.exception.FieldsIncorrectException;
 import project.exception.InternalServerException;
 import project.exception.ObjectNotFoundException;
 import project.service.CurrencyService;
 import project.util.JsonManager;
+import project.validator.CurrencyValidator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -18,7 +20,7 @@ import java.io.PrintWriter;
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
 
-    public static CurrencyService currencyService = CurrencyService.getINSTANCE();
+    public static CurrencyService currencyService = CurrencyService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -27,6 +29,12 @@ public class CurrencyServlet extends HttpServlet {
         var pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String type = pathInfo.substring(1);
+            if (!CurrencyValidator.isCodeCorrect(type)) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                String message = "Incorrect code currency";
+                resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
+                return;
+            }
             displayCurrency(type, req, resp);
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -42,8 +50,8 @@ public class CurrencyServlet extends HttpServlet {
             if (currencyObject.isPresent()) {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 CurrencyDto dto = currencyObject.get();
-                System.out.println();
-                out.write(JsonManager.dtoToJson(dto));
+                String result = JsonManager.dtoToJson(dto);
+                out.write(result);
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 String message = "Code is empty";

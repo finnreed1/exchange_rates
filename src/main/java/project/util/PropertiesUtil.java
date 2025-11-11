@@ -15,11 +15,7 @@ public final class PropertiesUtil {
     }
 
     private static void loadProperties() {
-        try (InputStream inputStream = PropertiesUtil.class.getClassLoader()
-                .getResourceAsStream("application.properties")) {
-            if (inputStream == null) {
-                throw new IllegalStateException("application.properties not found on the classpath");
-            }
+        try (InputStream inputStream = PropertiesUtil.class.getClassLoader().getResourceAsStream("application.properties")) {
             properties.load(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);

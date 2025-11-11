@@ -1,7 +1,6 @@
 package project.servlets;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,7 +25,7 @@ import java.util.Optional;
 @WebServlet("/currencies")
 public class CurrenciesServlet extends HttpServlet {
 
-    public static CurrencyService currencyService = CurrencyService.getINSTANCE();
+    public static CurrencyService currencyService = CurrencyService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -38,7 +37,7 @@ public class CurrenciesServlet extends HttpServlet {
             List<CurrencyDto> list = currencyService.findAll();
             System.out.println();
             for (CurrencyDto dto : list) {
-                out.write(dto.toString());
+                out.write(JsonManager.dtoToJson(dto));
             }
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

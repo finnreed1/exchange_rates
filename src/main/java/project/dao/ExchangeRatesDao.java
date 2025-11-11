@@ -1,11 +1,8 @@
 package project.dao;
 
-import lombok.Getter;
 import project.entity.Currency;
 import project.entity.ExchangeRates;
 import project.util.ConnectionManager;
-
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,8 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class ExchangeRatesDao implements Dao {
-    @Getter
-    public static ExchangeRatesDao getInstance =  new ExchangeRatesDao();
+
+    public static final ExchangeRatesDao INSTANCE =  new ExchangeRatesDao();
 
     private ExchangeRatesDao() {}
 
@@ -217,5 +214,9 @@ public class ExchangeRatesDao implements Dao {
                 return Optional.empty();
             }
         }
+    }
+
+    public static ExchangeRatesDao getInstance() {
+        return INSTANCE;
     }
 }
