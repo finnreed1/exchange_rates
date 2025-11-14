@@ -35,9 +35,6 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         var pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String type = pathInfo.substring(1);
@@ -67,7 +64,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 String message = "Exchange rates not found";
                 printWriter.write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
             }
-        } catch (IOException e) {
+        } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             String message = "Internal server error";
             resp.getWriter().write(JsonManager.errorToJson(message, new InternalServerException(e.getMessage())));
@@ -75,9 +72,6 @@ public class ExchangeRatesServlet extends HttpServlet {
     }
 
     public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         var pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String type = pathInfo.substring(1);
@@ -100,25 +94,23 @@ public class ExchangeRatesServlet extends HttpServlet {
             resp.getWriter().write(JsonManager.errorToJson(message, new FieldsEmptyException(message)));
             return;
         }
-
-        //404 - Одна (или обе) валюта из валютной пары не существует в БД
-        String baseCurrencyCode = type.substring(0, 3);
-        String targetCurrencyCode = type.substring(3, 6);
-        if (CurrencyValidator.isNotExists(baseCurrencyCode)) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            String message = "Base currency is not found";
-            resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
-        }
-
-        if (CurrencyValidator.isNotExists(targetCurrencyCode)) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            String message = "Target currency is not found";
-            resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
+        if (!ExchangeRatesValidator.isRateCorrect(rate)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            String message = "Rate is not correct";
+            resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
+            return;
         }
 
         try {
+            //404 - Одна (или обе) валюта из валютной пары не существует в БД
+            if (!ExchangeRatesValidator.isExistsCode(type)) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                String message = "Exchange rate currency on this type is not found";
+                resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
+                return;
+            }
             Double rateDouble = Double.parseDouble(rate);
-            exchangeRatesService.updateRate(baseCurrencyCode, targetCurrencyCode, rateDouble);
+            exchangeRatesService.updateRate(type, rateDouble);
             PrintWriter writer = resp.getWriter();
             ExchangeRatesDto dto = exchangeRatesService.findByCodes(type).get();
             writer.write(JsonManager.dtoToJson(dto));

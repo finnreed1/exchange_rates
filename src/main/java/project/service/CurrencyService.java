@@ -13,28 +13,25 @@ public class CurrencyService {
 
     public CurrencyDao currencyDao = CurrencyDao.getInstance();
 
-    private CurrencyService() {}
+    private CurrencyService() {
+    }
 
     public List<CurrencyDto> findAll() throws SQLException {
         return currencyDao.findAll().stream()
                 .map(currency -> new CurrencyDto(
                         currency.getCode(),
-                        currency.getFullname(),
+                        currency.getFullName(),
                         currency.getSign()
                 ))
                 .collect(Collectors.toList());
     }
 
-    public Optional<CurrencyDto> findByCode(String code) {
-        try {
-            return currencyDao.findByCode(code).map(currency -> new CurrencyDto(
-                    currency.getCode(),
-                    currency.getFullname(),
-                    currency.getSign()
-            ));
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL error: ", e);
-        }
+    public Optional<CurrencyDto> findByCode(String code) throws SQLException {
+        return currencyDao.findByCode(code).map(currency -> new CurrencyDto(
+                currency.getCode(),
+                currency.getFullName(),
+                currency.getSign()
+        ));
     }
 
     public void createNewCurrency(String code, String fullname, String sign) throws SQLException {

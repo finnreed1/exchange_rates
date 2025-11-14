@@ -24,9 +24,6 @@ public class ExchangesRatesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         try (PrintWriter printWriter = resp.getWriter()) {
             resp.setStatus(HttpServletResponse.SC_OK);
             List<ExchangeRatesDto> list = exchangeRatesService.findAll();
@@ -60,27 +57,34 @@ public class ExchangesRatesServlet extends HttpServlet {
             return;
         }
 
-        //409 - Валютная пара с таким кодом уже существует
-        if (ExchangeRatesValidator.isExistsCode(baseCurrencyCode.concat(targetCurrencyCode))) {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            String message = "Code is not unique";
-            resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));
+        if (!ExchangeRatesValidator.isRateCorrect(rate)) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            String message = "Rate is not correct";
+            resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
             return;
         }
 
-        //404 - Одна (или обе) валюта из валютной пары не существует в БД
-        if (CurrencyValidator.isNotExists(baseCurrencyCode)) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            String message = "Base currency is not found";
-            resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
-        }
-        if (CurrencyValidator.isNotExists(targetCurrencyCode)) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            String message = "Target currency is not found";
-            resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
-        }
-
         try {
+            //404 - Одна (или обе) валюта из валютной пары не существует в БД
+            if (!CurrencyValidator.isExistsCode(baseCurrencyCode)) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                String message = "Base currency is not found";
+                resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
+                return;
+            }
+            if (!CurrencyValidator.isExistsCode(targetCurrencyCode)) {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                String message = "Target currency is not found";
+                resp.getWriter().write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
+                return;
+            }
+            //409 - Валютная пара с таким кодом уже существует
+            if (ExchangeRatesValidator.isExistsCode(baseCurrencyCode.concat(targetCurrencyCode))) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                String message = "Code is not unique";
+                resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));
+                return;
+            }
             double rateDouble = Double.parseDouble(rate);
             exchangeRatesService.createExchangeRates(baseCurrencyCode, targetCurrencyCode, rateDouble);
             resp.setStatus(HttpServletResponse.SC_CREATED);

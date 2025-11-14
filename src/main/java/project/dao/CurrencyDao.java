@@ -76,7 +76,6 @@ public class CurrencyDao implements Dao<Long, Currency> {
             prepareStatement.setString(2, fullname);
             prepareStatement.setString(3, sign);
             prepareStatement.executeUpdate();
-
         }
     }
 

@@ -29,9 +29,6 @@ public class CurrenciesServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         try (PrintWriter out = resp.getWriter()) {
             resp.setStatus(HttpServletResponse.SC_OK);
             List<CurrencyDto> list = currencyService.findAll();
@@ -64,18 +61,18 @@ public class CurrenciesServlet extends HttpServlet {
             resp.getWriter().write(JsonManager.errorToJson(message, new FieldsIncorrectException(message)));
             return;
         }
-        if (!CurrencyValidator.isUniqueCode(code)) {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            String message = "Code is not unique";
-            resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));
-            return;
-        }
 
         try {
+            if (CurrencyValidator.isExistsCode(code)) {
+                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                String message = "Code is not unique";
+                resp.getWriter().write(JsonManager.errorToJson(message, new CodeExistsException(message)));
+                return;
+            }
             currencyService.createNewCurrency(code, fullname, sign);
             resp.setStatus(HttpServletResponse.SC_CREATED);
             PrintWriter out = resp.getWriter();
-            Optional<CurrencyDto> dto = currencyService.findByCode(code);
+            CurrencyDto dto = currencyService.findByCode(code).get();
             out.write(JsonManager.dtoToJson(dto));
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

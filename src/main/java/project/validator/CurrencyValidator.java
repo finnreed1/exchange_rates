@@ -2,6 +2,8 @@ package project.validator;
 
 import project.service.CurrencyService;
 
+import java.sql.SQLException;
+
 import static project.validator.SameValidator.isLetterCode;
 
 public class CurrencyValidator {
@@ -11,14 +13,7 @@ public class CurrencyValidator {
         return (code.length() == 3 && code.toUpperCase().equals(code) && isLetterCode(code));
     }
 
-    public static boolean isUniqueCode(String code) {
-        if (currencyService.findByCode(code).isPresent()){
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean isNotExists(String currencyCode) {
-        return currencyService.findByCode(currencyCode).isEmpty();
+    public static boolean isExistsCode(String currencyCode) throws SQLException {
+        return currencyService.findByCode(currencyCode).isPresent();
     }
 }

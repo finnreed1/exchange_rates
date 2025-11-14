@@ -6,6 +6,7 @@ import project.dto.ExchangeRatesDto;
 import project.entity.ExchangeRates;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -22,52 +23,52 @@ public class ExchangeRatesService {
 
     public List<ExchangeRatesDto> findAll() throws SQLException {
         return exchangeRatesDao.findAll().stream().map(exchangeRates -> new ExchangeRatesDto(
-                exchangeRates.getBase_currency(),
-                exchangeRates.getTarget_currency(),
+                exchangeRates.getBaseCurrency(),
+                exchangeRates.getTargetCurrency(),
                 exchangeRates.getRate()
         )).collect(Collectors.toList());
     }
 
-    public Optional<ExchangeRatesDto> findByCodes(String codes) {
-        try {
-            return exchangeRatesDao.findByCodes(codes).map(exchangeRates -> new ExchangeRatesDto(
-                    exchangeRates.getBase_currency(),
-                    exchangeRates.getTarget_currency(),
-                    exchangeRates.getRate()
-            ));
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL error: ", e);
-        }
+    public Optional<ExchangeRatesDto> findByCodes(String codes) throws SQLException {
+        String baseCurrencyCode = codes.substring(0, 3);
+        String targetCurrencyCode = codes.substring(3, 6);
+
+        return exchangeRatesDao.findByCodes(baseCurrencyCode, targetCurrencyCode).map(exchangeRates -> new ExchangeRatesDto(
+                exchangeRates.getBaseCurrency(),
+                exchangeRates.getTargetCurrency(),
+                exchangeRates.getRate()
+        ));
     }
 
     public void createExchangeRates(String baseCurrencyCode, String targetCurrencyCode, double rate) throws SQLException {
         exchangeRatesDao.createExchangeRates(baseCurrencyCode, targetCurrencyCode, rate);
-        // здесь нужно реверснуть, чтобы был доступен обратный перевод данных
     }
 
-    public void updateRate(String baseCurrencyCode, String targetCurrencyCode, Double rateDouble) throws SQLException {
+    public void updateRate(String type, Double rateDouble) throws SQLException {
+        String baseCurrencyCode = type.substring(0, 3);
+        String targetCurrencyCode = type.substring(3, 6);
         exchangeRatesDao.updateRate(baseCurrencyCode, targetCurrencyCode, rateDouble);
     }
 
     public Optional<ExchangeRatesAmountDto> makeDirectExchangeRate(String from, String to, String amount) throws SQLException {
         Optional<ExchangeRates> object = exchangeRatesDao.convertAtAmountCurrency(from, to);
         return Optional.of(new ExchangeRatesAmountDto(
-                object.get().getBase_currency(),
-                object.get().getTarget_currency(),
+                object.get().getBaseCurrency(),
+                object.get().getTargetCurrency(),
                 object.get().getRate(),
                 Double.parseDouble(amount),
-                object.get().getRate() * Double.parseDouble(amount)
+                convertToMoney(object.get().getRate().doubleValue() * Double.parseDouble(amount))
         ));
     }
 
     public Optional<ExchangeRatesAmountDto> makeReverseExchangeRate(String from, String to, String amount) throws SQLException {
         Optional<ExchangeRates> object = exchangeRatesDao.convertAtAmountCurrency(to, from);
         return Optional.of(new ExchangeRatesAmountDto(
-                object.get().getTarget_currency(),
-                object.get().getBase_currency(),
-                1 / object.get().getRate(),
+                object.get().getTargetCurrency(),
+                object.get().getBaseCurrency(),
+                BigDecimal.valueOf(1 / object.get().getRate().doubleValue()),
                 Double.parseDouble(amount),
-                (1 / object.get().getRate()) * Double.parseDouble(amount)
+                convertToMoney(1 / object.get().getRate().doubleValue() * Double.parseDouble(amount))
         ));
 
     }
@@ -78,28 +79,27 @@ public class ExchangeRatesService {
         Optional<ExchangeRates> object1 = exchangeRatesDao.convertAtAmountCurrency(code, from);
         Optional<ExchangeRates> object2 = exchangeRatesDao.convertAtAmountCurrency(code, to);
 
-        double crossRate = object1.get().getRate() / object2.get().getRate();
+        double crossRate = object1.get().getRate().doubleValue() / object2.get().getRate().doubleValue();
         return Optional.of(new ExchangeRatesAmountDto(
-                object1.get().getTarget_currency(),
-                object2.get().getTarget_currency(),
-                crossRate,
+                object1.get().getTargetCurrency(),
+                object2.get().getTargetCurrency(),
+                BigDecimal.valueOf(crossRate),
                 Double.parseDouble(amount),
-                crossRate * Double.parseDouble(amount)
+                convertToMoney(crossRate * Double.parseDouble(amount))
         ));
     }
 
     private String findCodesByCrossRates(String from, String to) throws SQLException {
-        String result = "";
         List<ExchangeRatesDto> rates = findAll();
 
         Set<String> basesFrom = rates.stream()
-                .filter(r -> r.getTarget_currency().getCode().equals(from))
-                .map(r -> r.getBase_currency().getCode())
+                .filter(r -> r.getTargetCurrency().getCode().equals(from))
+                .map(r -> r.getBaseCurrency().getCode())
                 .collect(Collectors.toSet());
 
         Set<String> basesTo = rates.stream()
-                .filter(r -> r.getTarget_currency().getCode().equals(to))
-                .map(r -> r.getBase_currency().getCode())
+                .filter(r -> r.getTargetCurrency().getCode().equals(to))
+                .map(r -> r.getBaseCurrency().getCode())
                 .collect(Collectors.toSet());
 
         for (String fromExample : basesFrom) {
@@ -107,7 +107,11 @@ public class ExchangeRatesService {
                 return fromExample;
             }
         }
-        return result;
+        return null;
+    }
+
+    private static BigDecimal convertToMoney(double value) {
+        return BigDecimal.valueOf(value).setScale(2, RoundingMode.HALF_UP);
     }
 
     public static ExchangeRatesService getInstance() {

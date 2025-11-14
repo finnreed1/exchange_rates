@@ -16,6 +16,7 @@ import project.validator.CurrencyValidator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 
 @WebServlet("/currency/*")
 public class CurrencyServlet extends HttpServlet {
@@ -24,8 +25,6 @@ public class CurrencyServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
         var pathInfo = req.getPathInfo();
         if (pathInfo != null && pathInfo.length() > 1) {
             String type = pathInfo.substring(1);
@@ -39,7 +38,7 @@ public class CurrencyServlet extends HttpServlet {
         } else {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             PrintWriter out = resp.getWriter();
-            String message = "Path is not find";
+            String message = "Path is not found";
             out.write(JsonManager.errorToJson(message, new FieldsEmptyException(message)));
         }
     }
@@ -54,10 +53,10 @@ public class CurrencyServlet extends HttpServlet {
                 out.write(result);
             } else {
                 resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                String message = "Code is empty";
+                String message = "Code is not found";
                 out.write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
             }
-        } catch (IOException e) {
+        } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             String message = "Internal server error";
             resp.getWriter().write(JsonManager.errorToJson(message, new InternalServerException(e.getMessage())));

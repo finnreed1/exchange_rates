@@ -1,20 +1,18 @@
 package project.entity;
 
-import lombok.*;
-
 import java.util.Objects;
 
 
 public class Currency {
     private int id;
     private String code;
-    private String fullname;
+    private String fullName;
     private String sign;
 
     public Currency(int id, String code, String fullname, String sign) {
         this.id = id;
         this.code = code;
-        this.fullname = fullname;
+        this.fullName = fullname;
         this.sign = sign;
     }
 
@@ -26,8 +24,8 @@ public class Currency {
         return code;
     }
 
-    public String getFullname() {
-        return fullname;
+    public String getFullName() {
+        return fullName;
     }
 
     public String getSign() {
@@ -39,12 +37,12 @@ public class Currency {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Currency currency = (Currency) o;
-        return id == currency.id && Objects.equals(code, currency.code) && Objects.equals(fullname, currency.fullname) && Objects.equals(sign, currency.sign);
+        return id == currency.id && Objects.equals(code, currency.code) && Objects.equals(fullName, currency.fullName) && Objects.equals(sign, currency.sign);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, code, fullname, sign);
+        return Objects.hash(id, code, fullName, sign);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class Currency {
         return "Currency{" +
                 "id=" + id +
                 ", code='" + code + '\'' +
-                ", fullname='" + fullname + '\'' +
+                ", fullname='" + fullName + '\'' +
                 ", sign='" + sign + '\'' +
                 '}';
     }

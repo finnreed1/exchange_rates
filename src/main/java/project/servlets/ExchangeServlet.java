@@ -9,6 +9,7 @@ import project.dto.ExchangeRatesAmountDto;
 import project.exception.FieldsEmptyException;
 import project.exception.FieldsIncorrectException;
 import project.exception.InternalServerException;
+import project.exception.ObjectNotFoundException;
 import project.service.ExchangeRatesService;
 import project.util.JsonManager;
 import project.validator.ExchangeRatesValidator;
@@ -24,9 +25,6 @@ public class ExchangeServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-
         String from = req.getParameter("from");
         String to = req.getParameter("to");
         String amount = req.getParameter("amount");
@@ -59,6 +57,11 @@ public class ExchangeServlet extends HttpServlet {
                 // кросс курс;
                 ExchangeRatesAmountDto dto = exchangeRatesService.makeCrossExchangeRate(from, to, amount).get();
                 out.write(JsonManager.dtoToJson(dto));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                PrintWriter printWriter = resp.getWriter();
+                String message = "Exchange rates not found";
+                printWriter.write(JsonManager.errorToJson(message, new ObjectNotFoundException(message)));
             }
         } catch (SQLException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

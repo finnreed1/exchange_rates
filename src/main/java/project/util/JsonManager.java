@@ -18,7 +18,7 @@ public class JsonManager {
     public static String errorToJson(String message, Exception exception) throws JsonProcessingException {
         Map<String, String> map = new HashMap<>();
         map.put("message", message);
-        map.put("exception", exception.getMessage());
+        map.put("exception", exception.getClass().getSimpleName());
         return JsonMapper.writeValueAsString(map);
     }
 

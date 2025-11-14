@@ -1,20 +1,19 @@
 package project.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ExchangeRates {
     private int id;
-    private Currency base_currency;
-    private Currency target_currency;
-    private double rate;
+    private Currency baseCurrency;
+    private Currency targetCurrency;
+    private BigDecimal rate;
 
-    public ExchangeRates(int id, Currency base_currency, Currency target_currency, double rate) {
+
+    public ExchangeRates(int id, Currency base_currency, Currency target_currency, BigDecimal rate) {
         this.id = id;
-        this.base_currency = base_currency;
-        this.target_currency = target_currency;
+        this.baseCurrency = base_currency;
+        this.targetCurrency = target_currency;
         this.rate = rate;
     }
 
@@ -22,38 +21,37 @@ public class ExchangeRates {
         return id;
     }
 
-    public Currency getBase_currency() {
-        return base_currency;
+    public Currency getBaseCurrency() {
+        return baseCurrency;
     }
 
-    public Currency getTarget_currency() {
-        return target_currency;
+    public Currency getTargetCurrency() {
+        return targetCurrency;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
     @Override
     public boolean equals(Object o) {
-
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExchangeRates that = (ExchangeRates) o;
-        return id == that.id && Double.compare(rate, that.rate) == 0 && Objects.equals(base_currency, that.base_currency) && Objects.equals(target_currency, that.target_currency);
+        return id == that.id && Objects.equals(baseCurrency, that.baseCurrency) && Objects.equals(targetCurrency, that.targetCurrency) && Objects.equals(rate, that.rate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, base_currency, target_currency, rate);
+        return Objects.hash(id, baseCurrency, targetCurrency, rate);
     }
 
     @Override
     public String toString() {
         return "ExchangeRates{" +
                 "id=" + id +
-                ", base_currency=" + base_currency +
-                ", target_currency=" + target_currency +
+                ", baseCurrency=" + baseCurrency +
+                ", targetCurrency=" + targetCurrency +
                 ", rate=" + rate +
                 '}';
     }

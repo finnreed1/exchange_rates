@@ -4,12 +4,12 @@ import java.util.Objects;
 
 public class CurrencyDto {
     private final String code;
-    private final String fullname;
+    private final String fullName;
     private final String sign;
 
     public CurrencyDto(String code, String fullname, String sign) {
         this.code = code;
-        this.fullname = fullname;
+        this.fullName = fullname;
         this.sign = sign;
     }
 
@@ -17,8 +17,8 @@ public class CurrencyDto {
         return code;
     }
 
-    public String getFullname() {
-        return fullname;
+    public String getFullName() {
+        return fullName;
     }
 
     public String getSign() {
@@ -30,19 +30,19 @@ public class CurrencyDto {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CurrencyDto that = (CurrencyDto) o;
-        return Objects.equals(code, that.code) && Objects.equals(fullname, that.fullname) && Objects.equals(sign, that.sign);
+        return Objects.equals(code, that.code) && Objects.equals(fullName, that.fullName) && Objects.equals(sign, that.sign);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(code, fullname, sign);
+        return Objects.hash(code, fullName, sign);
     }
 
     @Override
     public String toString() {
         return "CurrencyDto{" +
                "code='" + code + '\'' +
-               ", fullname='" + fullname + '\'' +
+               ", fullname='" + fullName + '\'' +
                ", sign='" + sign + '\'' +
                '}';
     }

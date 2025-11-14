@@ -2,32 +2,33 @@ package project.dto;
 
 import project.entity.Currency;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ExchangeRatesAmountDto {
-    private Currency base_currency;
-    private Currency target_currency;
-    private double rate;
+    private Currency baseCurrency;
+    private Currency targetCurrency;
+    private BigDecimal rate;
     private double amount;
-    private double convertedAmount;
+    private BigDecimal convertedAmount;
 
-    public ExchangeRatesAmountDto(Currency base_currency, Currency target_currency, double rate, double amount, double convertedAmount) {
-        this.base_currency = base_currency;
-        this.target_currency = target_currency;
+    public ExchangeRatesAmountDto(Currency base_currency, Currency target_currency, BigDecimal rate, double amount, BigDecimal convertedAmount) {
+        this.baseCurrency = base_currency;
+        this.targetCurrency = target_currency;
         this.rate = rate;
         this.amount = amount;
         this.convertedAmount = convertedAmount;
     }
 
-    public Currency getBase_currency() {
-        return base_currency;
+    public Currency getBaseCurrency() {
+        return baseCurrency;
     }
 
-    public Currency getTarget_currency() {
-        return target_currency;
+    public Currency getTargetCurrency() {
+        return targetCurrency;
     }
 
-    public double getRate() {
+    public BigDecimal getRate() {
         return rate;
     }
 
@@ -35,30 +36,31 @@ public class ExchangeRatesAmountDto {
         return amount;
     }
 
-    public double getConvertedAmount() {
+    public BigDecimal getConvertedAmount() {
         return convertedAmount;
     }
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExchangeRatesAmountDto that = (ExchangeRatesAmountDto) o;
-        return Double.compare(rate, that.rate) == 0 && Double.compare(amount, that.amount) == 0 && Double.compare(convertedAmount, that.convertedAmount) == 0 && Objects.equals(base_currency, that.base_currency) && Objects.equals(target_currency, that.target_currency);
+        return Double.compare(amount, that.amount) == 0 && Objects.equals(baseCurrency, that.baseCurrency) && Objects.equals(targetCurrency, that.targetCurrency) && Objects.equals(rate, that.rate) && Objects.equals(convertedAmount, that.convertedAmount);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(base_currency, target_currency, rate, amount, convertedAmount);
+        return Objects.hash(baseCurrency, targetCurrency, rate, amount, convertedAmount);
     }
 
     @Override
     public String toString() {
         return "ExchangeRatesAmountDto{" +
-               "base_currency=" + base_currency +
-               ", target_currency=" + target_currency +
-               ", rate=" + rate +
-               ", amount=" + amount +
-               ", convertedAmount=" + convertedAmount +
-               '}';
+                "base_currency=" + baseCurrency +
+                ", target_currency=" + targetCurrency +
+                ", rate=" + rate +
+                ", amount=" + amount +
+                ", convertedAmount=" + convertedAmount +
+                '}';
     }
 }

@@ -21,7 +21,7 @@ public class ExchangeRatesDao implements Dao {
             FROM ExchangeRates
             """;
 
-    String SQL_SELECT_BASE_CURRENCY = """
+    String SQL_FIND_BASE_CURRENCY = """
             SELECT Currencies.id,
                    Currencies.code,
                    Currencies.fullname,
@@ -31,7 +31,7 @@ public class ExchangeRatesDao implements Dao {
             WHERE base_currency_id = ?
             """;
 
-    String SQL_SELECT_TARGET_CURRENCY = """
+    String SQL_FIND_TARGET_CURRENCY = """
             SELECT Currencies.id, 
                    Currencies.code,
                    Currencies.fullname,
@@ -47,7 +47,7 @@ public class ExchangeRatesDao implements Dao {
             WHERE base_currency_id = ? and target_currency_id = ?
             """;
 
-    String SQL_FIND_CURRENCY_CODES = """
+    String SQL_FIND_BY_CURRENCY_CODE = """
             SELECT Currencies.id, Currencies.code, Currencies.fullname, Currencies.sign
             FROM Currencies
             WHERE Currencies.code = ?
@@ -58,7 +58,7 @@ public class ExchangeRatesDao implements Dao {
             VALUES (?, ?, ?)
             """;
 
-    String SQL_UPDATE_RATE = """
+    String SQL_UPDATE_EXCHANGE_RATE = """
             UPDATE ExchangeRates
             SET rate = ?
             WHERE base_currency_id = ? AND target_currency_id = ?
@@ -68,48 +68,46 @@ public class ExchangeRatesDao implements Dao {
     public List<ExchangeRates> findAll() throws SQLException {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SQL_FIND_ALL);
-             var baseCurrencyStatement = connection.prepareStatement(SQL_SELECT_BASE_CURRENCY);
-             var targetCurrencyStatement = connection.prepareStatement(SQL_SELECT_TARGET_CURRENCY)) {
+             var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_BASE_CURRENCY);
+             var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_TARGET_CURRENCY)) {
             List<ExchangeRates> list = new ArrayList<>();
             var result = prepareStatement.executeQuery();
             while (result.next()) {
                 list.add(new ExchangeRates(
                         result.getInt("id"),
-                        compareToCurrency(result.getInt("base_currency_id"), baseCurrencyStatement),
-                        compareToCurrency(result.getInt("target_currency_id"), targetCurrencyStatement),
-                        result.getDouble("rate")
+                        compareToCurrency(result.getInt("base_currency_id"), baseCurrencyStatement).orElse(null),
+                        compareToCurrency(result.getInt("target_currency_id"), targetCurrencyStatement).orElse(null),
+                        result.getBigDecimal("rate")
                 ));
             }
             return list;
         }
     }
 
-    private Currency compareToCurrency(int id, PreparedStatement preparedStatement) throws SQLException {
+    private Optional<Currency> compareToCurrency(int id, PreparedStatement preparedStatement) throws SQLException {
         preparedStatement.setInt(1, id);
         ResultSet resultSet = preparedStatement.executeQuery();
         if (resultSet.next()){
-            return new Currency(
+            return Optional.of(new Currency(
                     resultSet.getInt("id"),
                     resultSet.getString("code"),
                     resultSet.getString("fullname"),
                     resultSet.getString("sign")
-            );
+            ));
         }
         else {
-            throw new SQLException("ID is not exists");
+            return Optional.empty();
         }
     }
 
-    public Optional<ExchangeRates> findByCodes(String codes) throws SQLException {
+    public Optional<ExchangeRates> findByCodes(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
         try (var connection = ConnectionManager.get();
              var prepareStatement = connection.prepareStatement(SQL_FIND_BY_CODES);
-             var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES);
-             var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES)) {
+             var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE);
+             var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE)) {
 
-            String code1 = codes.substring(0, 3);
-            String code2 = codes.substring(3, 6);
-            baseCurrencyStatement.setString(1, code1);
-            targetCurrencyStatement.setString(1, code2);
+            baseCurrencyStatement.setString(1, baseCurrencyCode);
+            targetCurrencyStatement.setString(1, targetCurrencyCode);
 
             var baseCurrency = baseCurrencyStatement.executeQuery();
             var targetCurrency = targetCurrencyStatement.executeQuery();
@@ -132,7 +130,7 @@ public class ExchangeRatesDao implements Dao {
                                     targetCurrency.getString("fullname"),
                                     targetCurrency.getString("sign")
                             ),
-                            resultSet.getDouble("rate"))
+                            resultSet.getBigDecimal("rate"))
                     );
                 }
             }
@@ -143,9 +141,9 @@ public class ExchangeRatesDao implements Dao {
 
     public void createExchangeRates(String baseCurrencyCode, String targetCurrencyCode, double rate) throws SQLException {
         try (var connection = ConnectionManager.get();
-            var prepareStatement = connection.prepareStatement(SQL_CREATE_NEW_EXCHANGE_RATES);
-            var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES);
-            var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES)) {
+             var prepareStatement = connection.prepareStatement(SQL_CREATE_NEW_EXCHANGE_RATES);
+             var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE);
+             var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE)) {
 
             baseCurrencyStatement.setString(1, baseCurrencyCode);
             targetCurrencyStatement.setString(1, targetCurrencyCode);
@@ -162,9 +160,9 @@ public class ExchangeRatesDao implements Dao {
 
     public void updateRate(String baseCurrencyCode, String targetCurrencyCode, Double rateDouble) throws SQLException {
         try (var connection = ConnectionManager.get();
-            var prepareStatement = connection.prepareStatement(SQL_UPDATE_RATE);
-            var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES);
-            var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES)) {
+             var prepareStatement = connection.prepareStatement(SQL_UPDATE_EXCHANGE_RATE);
+             var baseCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE);
+             var targetCurrencyStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE)) {
 
             baseCurrencyStatement.setString(1, baseCurrencyCode);
             targetCurrencyStatement.setString(1, targetCurrencyCode);
@@ -181,9 +179,9 @@ public class ExchangeRatesDao implements Dao {
 
     public Optional<ExchangeRates> convertAtAmountCurrency(String from, String to) throws SQLException {
         try (var connection = ConnectionManager.get();
-            var prepareStatement = connection.prepareStatement(SQL_FIND_BY_CODES);
-            var fromStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES);
-            var toStatement = connection.prepareStatement(SQL_FIND_CURRENCY_CODES)) {
+             var prepareStatement = connection.prepareStatement(SQL_FIND_BY_CODES);
+             var fromStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE);
+             var toStatement = connection.prepareStatement(SQL_FIND_BY_CURRENCY_CODE)) {
 
             fromStatement.setString(1, from);
             toStatement.setString(1, to);
@@ -208,7 +206,7 @@ public class ExchangeRatesDao implements Dao {
                                 toObject.getString("fullname"),
                                 toObject.getString("sign")
                         ),
-                        resultSet.getDouble("rate")
+                        resultSet.getBigDecimal("rate")
                 ));
             } else {
                 return Optional.empty();

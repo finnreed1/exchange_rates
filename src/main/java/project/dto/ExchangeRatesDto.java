@@ -2,49 +2,51 @@ package project.dto;
 
 import project.entity.Currency;
 
+import java.math.BigDecimal;
 import java.util.Objects;
 
 public class ExchangeRatesDto {
-    private final Currency base_currency;
-    private final Currency target_currency;
-    private final double rate;
+    private final Currency baseCurrency;
+    private final Currency targetCurrency;
+    private final BigDecimal rate;
 
-    public ExchangeRatesDto(Currency baseCurrencyId, Currency targetCurrencyId, double rate) {
-        base_currency = baseCurrencyId;
-        target_currency = targetCurrencyId;
+    public ExchangeRatesDto(Currency base_currency, Currency target_currency, BigDecimal rate) {
+        this.baseCurrency = base_currency;
+        this.targetCurrency = target_currency;
         this.rate = rate;
+    }
+
+    public Currency getBaseCurrency() {
+        return baseCurrency;
+    }
+
+    public Currency getTargetCurrency() {
+        return targetCurrency;
+    }
+
+    public BigDecimal getRate() {
+        return rate;
     }
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ExchangeRatesDto that = (ExchangeRatesDto) o;
-        return base_currency == that.base_currency && target_currency == that.target_currency && Double.compare(rate, that.rate) == 0;
+        return Objects.equals(baseCurrency, that.baseCurrency) && Objects.equals(targetCurrency, that.targetCurrency) && Objects.equals(rate, that.rate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(base_currency, target_currency, rate);
+        return Objects.hash(baseCurrency, targetCurrency, rate);
     }
 
     @Override
     public String toString() {
         return "ExchangeRatesDto{" +
-               "base_currency_id=" + base_currency +
-               ", target_currency_id=" + target_currency +
-               ", rate=" + rate +
-               '}';
-    }
-
-    public Currency getBase_currency() {
-        return base_currency;
-    }
-
-    public Currency getTarget_currency() {
-        return target_currency;
-    }
-
-    public double getRate() {
-        return rate;
+                "base_currency=" + baseCurrency +
+                ", target_currency=" + targetCurrency +
+                ", rate=" + rate +
+                '}';
     }
 }
